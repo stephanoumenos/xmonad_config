@@ -6,6 +6,10 @@ import XMonad.Util.EZConfig
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.CopyWindow
+import XMonad.Layout.Circle
+import XMonad.Layout.MosaicAlt
+import XMonad.Layout.Spacing
+import XMonad.Layout.Spiral
 import XMonad.Layout.Gaps
 import XMonad.Layout.Fullscreen
 
@@ -40,7 +44,7 @@ raiseVolume =  "amixer -c 0 set Headphone 4+ ; amixer -c 1 set Headphone 4+ ; am
 
 myScratchPads = [ NS ("terminal"++n) (myTerminal ++ " --title scratch-terminal"++n) (title =? ("scratch-terminal"++n))  manageTerm | n <- map show [1..3]]
              ++ [ NS "clementine" "clementine" (className =? "Clementine") (proportionalCenteredSomething 0.9)
-                , NS "telegram" "telegram" (className =? "TelegramDesktop") (proportionalCenteredSomething 0.9)
+                , NS "telegram" "telegram-desktop" (className =? "TelegramDesktop") (proportionalCenteredSomething 0.9)
                 , NS "thunderbird" "thunderbird" (className =? "Thunderbird") (proportionalCenteredSomething 0.9)
                 ]
 
@@ -66,6 +70,8 @@ spawnSharedMpv = do
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm, xK_t), spawn $ XMonad.terminal conf)
+    , ((modm, xK_e), spawn "emacs")
+    , ((modm .|. shiftMask, xK_t), spawn $ (XMonad.terminal conf) ++ " --working-directory \"$(cat ~/.roothere)\"")
     , ((modm, xK_p), spawn $ (XMonad.terminal conf) ++ " -e ranger")
     , ((modm, xK_j), windows W.focusDown)
     , ((modm, xK_k), windows W.focusUp)
@@ -119,12 +125,12 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     -- you may also bind events to the mouse scroll wheel (button4 and button5)
     ]
 
-myGaps = [(U,18), (D,18), (L, 18), (R,18)]
+myGaps = [(U,9), (D,9), (L, 9), (R,9)]
 
 goldenRatio :: Rational
 goldenRatio = realToFrac $ 2/(1 + sqrt 5)
 
-myLayout = tiled ||| Mirror tiled ||| Full
+myLayout = spacingRaw True (Border 0 10 10 10) True (Border 10 10 10 10) True $ gaps myGaps $ spiral (6/7) ||| MosaicAlt M.empty ||| tiled ||| Circle ||| Full
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
